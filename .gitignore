@@ -4,4 +4,5 @@ node_modules/
 package-lock.json
 scripts/
 stats.html
+bun.lock
 *.log
