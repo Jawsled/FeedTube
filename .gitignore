@@ -1,0 +1,7 @@
+node_modules/
+.output/
+.wxt/
+package-lock.json
+scripts/
+stats.html
+*.log
