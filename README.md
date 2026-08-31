@@ -1,5 +1,5 @@
 # FeedTube
-<<<<<<< HEAD
+
 A prrof of concept browser extension for tracking channel uploads across YouTube, Odysee, Bilibili, PeerTube, and SoundCloud. Videos always open on the native platform in a normal browser tab. Inspired by FreeTube, Newpipe and Grayjay.
 =======
 
@@ -123,4 +123,4 @@ Thank you for your amazing work!
 
 ## Disclosure on LLM use
 This proof of concept was written with assist from Qwen3.8 27B.
->>>>>>> 63e0b12 (initial commit)
+
