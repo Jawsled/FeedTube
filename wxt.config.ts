@@ -4,7 +4,12 @@ export default defineConfig({
   manifest: ({ browser }) => ({
     name: 'FeedTube',
     description: 'Track channel uploads on YouTube, Odysee, Bilibili, PeerTube, and SoundCloud.',
-    permissions: ['storage', 'alarms', 'declarativeNetRequest', 'offscreen'],
+    permissions: [
+      'storage',
+      'alarms',
+      'declarativeNetRequest',
+      ...(browser === 'firefox' ? [] : ['offscreen']),
+    ],
     host_permissions: [
       'https://www.youtube.com/*',
       'https://api.odysee.com/*',
@@ -43,7 +48,7 @@ export default defineConfig({
       ? {
           browser_specific_settings: {
             gecko: {
-              id: 'feedtube@pttx.dev',
+              id: 'feedtube@jawsled.dev',
               strict_min_version: '128.0',
               data_collection_permissions: { required: ['none' as const] },
             },
