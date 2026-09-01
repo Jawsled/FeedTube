@@ -51,7 +51,7 @@ function bestThumb(list: unknown): string | null {
 }
 
 export function fallbackThumb(videoId: string): string {
-  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${videoId.replace(/^youtube:/, '')}/hqdefault.jpg`;
 }
 
 interface ParseCtx {
@@ -324,13 +324,13 @@ async function scrapeCanonical(url: string, signal?: AbortSignal): Promise<strin
 export const youtubeAdapter: SourceAdapter = {
   kind: 'youtube',
   watchUrl(videoId) {
-    return `https://www.youtube.com/watch?v=${videoId}`;
+    return `https://www.youtube.com/watch?v=${videoId.replace(/^youtube:/, '')}`;
   },
   channelUrl(id) {
-    return `https://www.youtube.com/channel/${id}`;
+    return `https://www.youtube.com/channel/${id.replace(/^youtube:/, '')}`;
   },
   videoIdForStorage(raw) {
-    return raw;
+    return raw.replace(/^youtube:/, '');
   },
   videoIdFromStorage(stored) {
     return stored;

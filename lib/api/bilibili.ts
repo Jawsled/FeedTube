@@ -248,8 +248,10 @@ export async function probeBilibiliApi(signal?: AbortSignal): Promise<{ ok: bool
 export const bilibiliAdapter: SourceAdapter = {
   kind: 'bilibili',
   watchUrl(id: string, _kind: VideoKind): string {
-    if (id.startsWith('BV')) return `https://www.bilibili.com/video/${id}`;
-    return `https://www.bilibili.com/video/av${id.replace(/^av/, '')}`;
+    const colon = id.indexOf(':');
+    const clean = colon >= 0 ? id.slice(colon + 1) : id;
+    if (clean.startsWith('BV')) return `https://www.bilibili.com/video/${clean}`;
+    return `https://www.bilibili.com/video/av${clean.replace(/^av/, '')}`;
   },
   channelUrl(id: string): string {
     const mid = id.startsWith('mid_') ? id.slice(4) : id;
@@ -306,7 +308,7 @@ export const bilibiliAdapter: SourceAdapter = {
     return `bili_${bvid}`;
   },
   videoIdFromStorage(stored: string): string {
-    return stored.replace(/^bili_/, '').replace(/^av/, '');
+    return stored.replace(/^bili(?:libili)?:?/, '').replace(/^av/, '');
   },
 };
 

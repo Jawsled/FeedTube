@@ -196,7 +196,9 @@ async function resolveByClaimId(claimId: string, signal?: AbortSignal): Promise<
 export const odyseeAdapter: SourceAdapter = {
   kind: 'odysee',
   watchUrl(videoId) {
-    return `https://odysee.com/${videoId}`;
+    const colon = videoId.indexOf(':');
+    const clean = colon >= 0 ? videoId.slice(colon + 1) : videoId;
+    return `https://odysee.com/${clean}`;
   },
   channelUrl(id) {
     return `https://odysee.com/${id}`;

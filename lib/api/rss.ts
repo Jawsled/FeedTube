@@ -65,7 +65,7 @@ export async function fetchChannelRss(channelId: string, signal?: AbortSignal): 
       thumbnailUrl:
         typeof thumb?.['@_url'] === 'string' && thumb['@_url'].startsWith('http')
           ? (thumb['@_url'] as string)
-          : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+          : `https://i.ytimg.com/vi/${id.replace(/^youtube:/, '')}/hqdefault.jpg`,
     });
   }
   return { name, videos };

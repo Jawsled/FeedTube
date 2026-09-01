@@ -57,9 +57,17 @@ function normalizeHandle(raw: string): string {
   return raw.trim().replace(/^@/, '').toLowerCase();
 }
 
+// Firefox MV2 does not support the offscreen API.  In that environment the
+// background script is a persistent page with full fetch/DOM access, so we
+// can make network requests directly.  Chrome MV3 uses a service worker and
+// requires the offscreen document to access fetch in a page context (needed
+// to bypass SoundCloud's DataDome bot protection).
+const hasOffscreen = typeof (browser as any).offscreen?.createDocument === 'function';
+
 let offscreenCreated = false;
 
 async function ensureOffscreen(): Promise<void> {
+  if (!hasOffscreen) return;
   if (offscreenCreated) return;
   try {
     await (browser as any).offscreen.createDocument({
@@ -75,6 +83,21 @@ async function ensureOffscreen(): Promise<void> {
 }
 
 async function offscreenFetch(type: 'sc-fetch-text' | 'sc-fetch-json', url: string): Promise<{ ok: boolean; status: number; text: string }> {
+  // Firefox: make the request directly — no offscreen document needed.
+  if (!hasOffscreen) {
+    try {
+      const init: RequestInit = type === 'sc-fetch-json'
+        ? { headers: { Accept: 'application/json' } }
+        : {};
+      const res = await fetch(url, init);
+      const text = await res.text();
+      return { ok: res.ok, status: res.status, text };
+    } catch (e) {
+      return { ok: false, status: 0, text: e instanceof Error ? e.message : String(e) };
+    }
+  }
+
+  // Chrome: route through the offscreen document.
   await ensureOffscreen();
   try {
     const result = await browser.runtime.sendMessage({ type, url });
@@ -225,7 +248,7 @@ function upgradeArtwork(url: string | null | undefined): string | null {
 
 function trackToVideo(t: ScTrack): ParsedVideo {
   return {
-    id: `sc:${t.id}`,
+    id: t.permalink_url || `sc:${t.id}`,
     title: (t.title ?? '').trim() || 'Untitled',
     publishedAt: t.created_at ? Date.parse(t.created_at) : null,
     approxDate: false,
@@ -380,6 +403,7 @@ async function resolveByHandle(handle: string, signal?: AbortSignal): Promise<Re
 export const soundcloudAdapter: SourceAdapter = {
   kind: 'soundcloud',
   watchUrl(videoId) {
+    if (videoId.startsWith('http')) return videoId;
     if (videoId.startsWith('soundcloud:')) return videoId.slice('soundcloud:'.length);
     if (videoId.startsWith('sc_track:')) return videoId.slice('sc_track:'.length);
     if (videoId.startsWith('sc:')) return `https://soundcloud.com/track/${videoId.slice(3)}`;
