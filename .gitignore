@@ -1,26 +1,12 @@
-# Dependencies
 node_modules/
-
-# Build output
 Extension/.output/
 Extension/.wxt/
 Local/dist/
-
-# Lock files
 package-lock.json
-
-# User data (Local)
 Local/data/
-
-# Logs
 *.log
-
-# Misc
 .DS_Store
 Thumbs.db
-
-# Old structure (files now in Extension/)
-assets/
 entrypoints/
 lib/
 public/
