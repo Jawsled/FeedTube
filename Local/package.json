@@ -1,0 +1,30 @@
+{
+  "name": "feedtube-local",
+  "description": "Local web version of FeedTube - track channel uploads and open them in your browser",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"node server/index.js\" \"vite --port 5199\"",
+    "server": "node server/index.js",
+    "build": "vite build",
+    "start": "concurrently \"node server/index.js\" \"vite --port 5199\"",
+    "compile": "tsc --noEmit",
+    "test": "node scripts/smoke-test.mjs && node scripts/io-test.mjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "fast-xml-parser": "^5.2.5",
+    "jszip": "^3.10.1",
+    "preact": "^10.27.2",
+    "spark-md5": "^3.0.2",
+    "sql.js": "^1.13.0"
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.9",
+    "concurrently": "^9.1.2",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.0"
+  }
+}

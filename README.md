@@ -1,12 +1,18 @@
 # FeedTube
 
-A prrof of concept browser extension for tracking channel uploads across YouTube, Odysee, Bilibili, PeerTube, and SoundCloud. Videos always open on the native platform in a normal browser tab. Inspired by FreeTube, Newpipe and Grayjay.
+A proof of concept browser extension and web-app for tracking channel uploads across YouTube, Odysee, Bilibili, PeerTube, and SoundCloud. Videos always open on the native platform in a normal browser tab. Inspired by FreeTube, Newpipe and Grayjay.
 
 ## Why I made this
 
 I love using alternative clients such as Freetube, Newpipe, and Grayjay, however they face too much issues with playback due to changes on YouTube side, making them difficult to use. 
 
 This project is a proof of concept, that if you just have a tracker, then leave the player to a browser, not only does it allow more flexibility for users, but I avoid having to keep dealing with playback changes, and users are free to combine it with any other extension or surrounding software as they see fit.
+
+## What this is not
+
+- this is ot an ad blocker
+- This does not offer download capabilities
+- This does not deal with any playback
 
 ## Supported Platforms
 
@@ -58,14 +64,9 @@ This project is a proof of concept, that if you just have a tracker, then leave 
 | OPML | Yes | Yes |
 | Grayjay ZIP | Yes | Yes |
 
-## What this is not
+---
 
-- this extension is not an ad blocker
-- This extension does not offer download capabilities
-- This extension does not deal with any playback
-- This extension does not deal with any playback
-- This extension does not deal with any playback
-
+# Browser Extension
 
 ## Build
 
@@ -113,6 +114,73 @@ The extension requests these permissions:
 
 Host permissions cover the API and web origins for each supported platform. Optional host permissions allow resolving arbitrary channel URLs.
 
+---
+
+# Local  Web-app
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+Opens at **http://localhost:5199**. The data API runs on port 5198 (proxied through Vite automatically).
+
+
+## Architecture
+
+```
+Browser (localhost:5199)          Express (localhost:5198)
+┌──────────────────────┐         ┌──────────────────────┐
+│  Preact SPA          │  /api/* │  REST API            │
+│  ├─ FeedView         │ ──────> │  ├─ channels CRUD    │
+│  ├─ SubscriptionsView│         │  ├─ videos merge     │
+│  ├─ HistoryView      │         │  ├─ tags CRUD        │
+│  └─ SettingsView     │         │  ├─ settings         │
+│                      │         │  └─ engine state     │
+│  api-client.ts       │         │                      │
+│  db.ts (API-backed)  │         │  data/*.json files   │
+│  platform.ts         │         │                      │
+└──────────────────────┘         └──────────────────────┘
+        │
+        │ /proxy?url=...
+        v
+   External APIs (YouTube, Bilibili, etc.)
+```
+
+### Data Storage
+
+All data is stored as JSON files in the `data/` directory at the project root:
+
+| File | Contents |
+|------|----------|
+| `channels.json` | Subscribed channel records |
+| `videos.json` | Cached video records |
+| `tags.json` | Tag definitions |
+| `settings.json` | App configuration |
+| `engine-status.json` | Refresh engine state |
+| `engine-log.json` | Activity log |
+| `engine-pending.json` | Interrupted refresh queue |
+
+Since data lives on disk, multiple browser profiles (or machines sharing the same directory) see the same subscriptions and history.
+
+### Vite Proxy
+
+Cross-origin requests to external APIs are routed through a Vite dev server middleware (`/proxy?url=<target>`) that strips the `Origin` header and sets appropriate `Referer` values — replacing the browser extension's `host_permissions` and `declarativeNetRequest` rules.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start data API + Vite dev server |
+| `npm run server` | Start only the data API |
+| `npm run build` | Production build to `dist/` |
+| `npm run compile` | TypeScript type check |
+| `npm test` | Run smoke + IO tests |
+
+---
+
 ## Acknowledgement
 Inspiration and technical implementation:
 [Freetube](https://github.com/FreeTubeApp/FreeTube), [Grayjay plugins](https://grayjay.app/), [PipePipe](https://github.com/InfinityLoop1308/PipePipe)
@@ -120,4 +188,3 @@ Thank you for your amazing work!
 
 ## Disclosure on LLM use
 This proof of concept was written with assist from Qwen3.8 27B.
-
