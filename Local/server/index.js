@@ -1,6 +1,5 @@
 import express from 'express';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { readFile, writeFile, mkdir, rename, unlink } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,7 +10,7 @@ const PORT = process.env.PORT ?? 5198;
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 async function ensureDataDir() {
-  if (!existsSync(DATA_DIR)) await mkdir(DATA_DIR, { recursive: true });
+  await mkdir(DATA_DIR, { recursive: true });
 }
 
 async function readJSON(name) {
@@ -28,10 +27,13 @@ async function writeJSON(name, data) {
   await ensureDataDir();
   const p = join(DATA_DIR, name);
   const tmp = p + '.tmp';
-  await writeFile(tmp, JSON.stringify(data, null, 2), 'utf-8');
-  // rename is atomic on the same filesystem
-  const { renameSync } = await import('node:fs');
-  renameSync(tmp, p);
+  try {
+    await writeFile(tmp, JSON.stringify(data, null, 2), 'utf-8');
+    await rename(tmp, p);
+  } catch (err) {
+    await unlink(tmp).catch(() => {});
+    throw err;
+  }
 }
 
 // ── app ──────────────────────────────────────────────────────────────────────
