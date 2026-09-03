@@ -13,6 +13,7 @@ This project is a proof of concept, that if you just have a tracker, then leave 
 - this is ot an ad blocker
 - This does not offer download capabilities
 - This does not deal with any playback
+- Issue-free experience (yet)
 
 ## Supported Platforms
 
@@ -83,7 +84,11 @@ npm run dev:firefox  # Firefox dev mode
 
 ## Install
 
-Just install like any other unpacked extension. 
+Just install like any other unpacked extension on your browser.
+
+## Mobile support
+
+It works, though this is intended for desktop / laptops. If you do try though, make sure the browser is in desktop view, otherwise there are issues with layout collision.
 
 ## Tech Stack
 
