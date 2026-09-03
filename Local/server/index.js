@@ -1,5 +1,5 @@
 import express from 'express';
-import { readFile, writeFile, mkdir, rename, unlink } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,7 +28,6 @@ const writeLocks = new Map();
 async function writeJSON(name, data) {
   await ensureDataDir();
   const p = join(DATA_DIR, name);
-  const tmp = p + '.tmp';
 
   // serialize writes to the same file
   while (writeLocks.has(name)) await writeLocks.get(name);
@@ -36,11 +35,7 @@ async function writeJSON(name, data) {
   const lock = new Promise((r) => (resolve = r));
   writeLocks.set(name, lock);
   try {
-    await writeFile(tmp, JSON.stringify(data, null, 2), 'utf-8');
-    await rename(tmp, p);
-  } catch (err) {
-    try { await unlink(tmp); } catch {}
-    throw err;
+    await writeFile(p, JSON.stringify(data, null, 2), 'utf-8');
   } finally {
     writeLocks.delete(name);
     resolve();
@@ -50,7 +45,7 @@ async function writeJSON(name, data) {
 // ── app ──────────────────────────────────────────────────────────────────────
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb', strict: false }));
 
 // CORS for local dev (Vite on different port)
 app.use((_req, res, next) => {
@@ -353,6 +348,22 @@ app.put('/api/engine/bili-banned', async (req, res) => {
 app.delete('/api/engine/bili-banned', async (_req, res) => {
   await writeJSON('bili-banned.json', null);
   res.json({ ok: true });
+});
+
+// ── error handler ─────────────────────────────────────────────────────────────
+
+app.use((err, _req, res, _next) => {
+  console.error('[feedtube] error:', err);
+  res.status(500).json({ error: err.message ?? 'internal error' });
+});
+
+// ── process error handlers ───────────────────────────────────────────────────
+
+process.on('unhandledRejection', (err) => {
+  console.error('[feedtube] unhandled rejection:', err);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[feedtube] uncaught exception:', err);
 });
 
 // ── start ────────────────────────────────────────────────────────────────────
