@@ -23,16 +23,27 @@ async function readJSON(name) {
   }
 }
 
+const writeLocks = new Map();
+
 async function writeJSON(name, data) {
   await ensureDataDir();
   const p = join(DATA_DIR, name);
   const tmp = p + '.tmp';
+
+  // serialize writes to the same file
+  while (writeLocks.has(name)) await writeLocks.get(name);
+  let resolve;
+  const lock = new Promise((r) => (resolve = r));
+  writeLocks.set(name, lock);
   try {
     await writeFile(tmp, JSON.stringify(data, null, 2), 'utf-8');
     await rename(tmp, p);
   } catch (err) {
-    await unlink(tmp).catch(() => {});
+    try { await unlink(tmp); } catch {}
     throw err;
+  } finally {
+    writeLocks.delete(name);
+    resolve();
   }
 }
 
